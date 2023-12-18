@@ -1,0 +1,12 @@
+{
+    "metric": 1,
+    "n_comp": 2,
+    "name": "sub08_b_new",
+    "rdm": "C:/Users/assun/Documents/GitHub/Triagulation4rtRSA/example_data/sub08_b/new_proj\\sub08_b.rdm",
+    "base_stimuli": "C:/Users/assun/Documents/GitHub/Triagulation4rtRSA/example_data/sub08_b/new_proj\\sub08_b.tvals",
+    "rs_coords": "C:/Users/assun/Documents/GitHub/Triagulation4rtRSA/example_data/sub08_b/new_proj\\sub08_b.rsc",
+    "inv_mat": "C:/Users/assun/Documents/GitHub/Triagulation4rtRSA/example_data/sub08_b/new_proj\\sub08_b.mat",
+    "func_coords": "C:/Users/assun/Documents/GitHub/Triagulation4rtRSA/example_data/sub08_b/new_proj\\sub08_b.fnc",
+    "conditions": "C:/Users/assun/Documents/GitHub/Triagulation4rtRSA/example_data/sub08_b/new_proj\\sub08_b.cnd",
+    "stress": "C:/Users/assun/Documents/GitHub/Triagulation4rtRSA/example_data/sub08_b/new_proj\\sub08_b.stress"
+}
