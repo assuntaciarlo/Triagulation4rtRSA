@@ -1,6 +1,6 @@
 # Triagulation4rtRSA
 
-Python scripts for two-dimensional feedback generation in _Semantic_ fMRI neurofeedback.
+### Python scripts for two-dimensional feedback generation in _Semantic_ fMRI neurofeedback.
 
 This method has been used to guide participants towards a target mental state through real-time Representational Similarity Analysis (rtRSA) of brain activity patterns. 
 It provides visual 2D feedback representing the current mental state of the participant as a movable point among semantic anchors obtained from previous acquisitions. 
