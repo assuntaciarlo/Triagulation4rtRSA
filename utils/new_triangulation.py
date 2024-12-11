@@ -14,7 +14,7 @@ import matplotlib.lines as mlines
 
 
 #packages for the optimization
-from scipy.optimize import LinearConstraint, SR1
+from scipy.optimize import LinearConstraint, SR1 #tested using scipy version 1.5.2
 from scipy.optimize import minimize
 from scipy.spatial.distance import euclidean
 import math
@@ -27,10 +27,10 @@ def approx_segment(distances, RScoords, triangle_flag = False): #SEGMENT
     '''
     This function approximates the computation of the position of a new projected point 
     placing it on the segment between the two base stimuli with the lowest CD from the
-    current pattern and the other closest stilusus to that one
+    current pattern and its closest stimulus.
     
     distances: CDs between current pattern and base stiluli
-    RScoords: target centered coordinates of the base stimuli on the RS
+    RScoords: target-centered coordinates of the base stimuli on the RS
         
     '''
     idx_cd_min = np.argmin(distances)
@@ -46,12 +46,12 @@ def approx_segment(distances, RScoords, triangle_flag = False): #SEGMENT
         ed = []
         ed.append([euclidean(RScoords[idx_cd_min,:], RScoords[i,:]) 
                     for i in range(len(RScoords))])
-        idx_ed_min = np.argsort(ed)[0,1] # take the second closer stimulus to stim0 (stim1), the first is stim0 itself
+        idx_ed_min = np.argsort(ed)[0,1] # take the second closest stimulus to stim0 (stim1), the first is stim0 itself
         
         #distance between the two selected stimuli
         d = euclidean(RScoords[idx_cd_min], RScoords[idx_ed_min])
         
-        #compute distance from  stim0 as a proportion d0:d1 = CD0:CD1, d0+d1 = d
+        #compute distance from  stim0 (d0) from the intersection {d0:d1 = CD0:CD1, d0+d1 = d}
         d0 = d*distances[idx_cd_min]/(distances[idx_cd_min]+distances[idx_ed_min])
             
         coef = np.polyfit(RScoords[[idx_cd_min, idx_ed_min],0], RScoords[[idx_cd_min, idx_ed_min],1], 1)
@@ -116,7 +116,7 @@ def approx_triangle(distances, RScoords,idx_trg): #TRIANGLE
     d_target = distances[idx_trg]
    
     
-    # coefficients of 2 degree equation
+    # coefficients of 2nr order equation equation
     a = 1+1/m**2
     b=-2/m*(x_hat/m+y_hat)
     c = (x_hat/m+y_hat)**2 - d_target**2
@@ -125,10 +125,13 @@ def approx_triangle(distances, RScoords,idx_trg): #TRIANGLE
     # NOTE: delta might be less than 0 in case the circle centered to the target 
     # and the line orthogonal to the segment don't intersect 
     
-    #compute the coordinate of the RS centroid G
+    #compute the coordinate of the RS centroid G (to project the point 'outside' the RS)
     xg = np.mean(RScoords,axis=0)[0]
     yg = np.mean(RScoords,axis=0)[1]
-    
+
+    # NOTE: the code below could be imporved just checking that the point is outside the poligonal area defined by the base stimuli
+    # not implemented now
+
     if (RScoords[idx_cd_min,0] -xg)*(RScoords[idx_ed_min,0]-xg)>0 and (RScoords[idx_cd_min,1] -yg)*(RScoords[idx_ed_min,1]-yg)<0 and delta>=0: 
         #both left or both right (one above and one below G)
         #plot always outside the space
@@ -268,11 +271,11 @@ def optimise_projection(rtRSAObj, new_stim, idx_trg,theta):
 
     """
  
-    #the number of stimuli are the number of columns 
+    #the number of stimuli equals the number of columns 
     NrOfBaseStim = np.shape(rtRSAObj.base_stimuli)[1]
 
     if rtRSAObj.dist_metric == 1:
-        # Use the Pearson correlation and transform it in a distance
+        # Use the Pearson correlation and transform it in a distance measure
         distances = [(1-np.corrcoef(rtRSAObj.base_stimuli[:,idx], new_stim)[0][1],idx) 
         for idx in range(NrOfBaseStim)]
 
@@ -300,7 +303,7 @@ def optimise_projection(rtRSAObj, new_stim, idx_trg,theta):
     else:
         
         # print('unordered distances:',unordered_distances)
-        #order according the first column, e.g. CD
+        #order according to the first column, e.g. CD
         ordered_distances = unordered_distances[unordered_distances[:, 0].argsort()]  
         # print('ordered distances:',ordered_distances)
     
@@ -323,8 +326,6 @@ def optimise_projection(rtRSAObj, new_stim, idx_trg,theta):
                 left_constrain_matrix.append(x1-x2)
                 right_constrain_matrix.append(0.5*(np.linalg.norm(x1,2)**2 - np.linalg.norm(x2,2)**2))
             
-            
-    
     
         left_constrain_matrix = -1*np.array(left_constrain_matrix)
         right_constrain_matrix = -1*np.array(right_constrain_matrix)
@@ -337,13 +338,12 @@ def optimise_projection(rtRSAObj, new_stim, idx_trg,theta):
                                              right_constrain_matrix)
         
        
-        #starting point on the circle with the target in the center
-        
+        # starting point on the circle with the target in the center at an angle theta.
         x0 =[unordered_distances[idx_trg,0]*math.cos(theta),
              unordered_distances[idx_trg,0]*math.sin(theta)] 
     
         
-        #optimisation with scipy
+        # optimisation with scipy
         res = minimize(fun,
                        x0, 
                        args = (unordered_distances[idx_trg,0]), 
